@@ -1,7 +1,7 @@
 
 # Black-Scholes-Merton model for Option Pricing
 #### Video Demo: <https://youtu.be/L3EuAxM0MTA>
-#### Video Demo: <https://patelshlok.streamlit.app/>
+#### App URL: <https://patelshlok.streamlit.app/>
 ### Understanding Option Pricing Through Mathematics
 
 This project presents a Python-based implementation of the Black-Scholes-Merton (BSM) model—one of the most widely recognized analytical tools for valuing European-style options. The objective is to illustrate the theoretical foundations of option pricing through a practical and interactive application.

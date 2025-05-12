@@ -23,13 +23,15 @@ def black_scholes(S, K, T, r, sigma, option_type):
 def calculate_d1(S, K, T, r, sigma):
 
     S  = np.array(S, dtype=np.float64)
-    if np.any(T) == 0 or  np.any(sigma) == 0 or np.any(K) == 0:
+    if np.all(T) < 0:
+        raise ValueError("Time has to be positive")
+    if np.all(T) == 0 or  np.all(sigma) == 0 or np.all(K) == 0:
         raise ValueError("Time to maturity (T), strike price (K) and volatility (σ) cannot be ZERO. Please validate input.")
     return ((np.log(S / K)) + (r + (sigma**2)*0.5)*T)/(sigma*np.sqrt(T))
 
 def calculate_d2( d1, T, sigma):
 
-    if np.any(d1):
+    if np.all(d1):
         return d1 - (sigma*np.sqrt(T))
     else:
         raise ValueError("The function is defined as calculate_d2( d1, T, sigma), you are seeing this error because the 'd1' parameter is missing.")
@@ -52,7 +54,7 @@ def calculate_greeks(S, K, T, r, sigma, option_type):
     gamma = (norm.pdf(d1) /(S * sigma * np.sqrt(T)))
 
     #VEGA
-    vega = (norm.pdf(d1) * S * np.sqrt(T))
+    vega = (norm.pdf(d1) * S * np.sqrt(T)) / 100
 
     #THETA
     if option_type == "Call":
@@ -62,11 +64,11 @@ def calculate_greeks(S, K, T, r, sigma, option_type):
 
     #RHO
     if option_type == "Call":
-        rho = (K * T * np.exp(-r * T) * norm.cdf(d2))
+        rho = (K * T * np.exp(-r * T) * norm.cdf(d2)) / 100
     else:
-        rho = (-K * T * np.exp(-r * T) * norm.cdf(-d2))
+        rho = (-K * T * np.exp(-r * T) * norm.cdf(-d2)) / 100
 
-    return {"Name":["Delta", "Gamma","Vega","Theta","Rho"], "Value":[f'{delta:.4f}', f'{gamma:.4f}',f'{(vega/100):.4f}',f'{(theta):.4f}',f'{(rho/100):.4f}']}
+    return {"Name":["Delta", "Gamma","Vega","Theta","Rho"], "Value":[ delta , gamma, vega, theta, rho]}
 
 
 # basic setup for page
@@ -140,6 +142,7 @@ def main():
 
 
     if latest_price and execute_op:
+
     # return the findings of yfinance along with user input for data validation
         st.subheader("☺️Summary of the inputs:", divider="rainbow")
         data = {"Name" : ["Ticker","Current Price", "Strike Price (K)", "Time till maturity (T) in years", "Risk-free Rate (r)", "Volatility (σ)", "Option Type","Range of Stock Price (as %)"],
@@ -160,29 +163,29 @@ def main():
         with col_1:
             st.metric(label=f"{option_type} option price is:", value=f'{option_price:.2f}',  label_visibility="visible", border=True)
         with col_2:
-            st.metric(label="Delta (Δ):",value=greeks["Value"][0], border=True)
+            st.metric(label="Delta (Δ):",value=f"{(greeks["Value"][0]):.4f}", border=True)
 
         col_3 , col_4  = st.columns(2)
         with col_3:
-            st.metric(label="Gamma (Γ):",value=greeks["Value"][1], border=True)
+            st.metric(label="Gamma (Γ):",value=f"{(greeks["Value"][1]):.4f}", border=True)
         with col_4:
-            st.metric(label="Vega (V):",value=greeks["Value"][2], border=True)
+            st.metric(label="Vega (V):",value=f"{(greeks["Value"][2]):.4f}", border=True)
 
         col_5 , col_6  = st.columns(2)
         with col_5:
-            st.metric(label="Theta (Θ):",value=greeks["Value"][3], border=True)
+            st.metric(label="Theta (Θ):",value=f"{(greeks["Value"][3]):.4f}", border=True)
         with col_6:
-            st.metric(label="Rho (ρ):",value=greeks["Value"][4], border=True)
+            st.metric(label="Rho (ρ):",value=f"{(greeks["Value"][4]):3f}", border=True)
 
         if slider:
         # graph of Greeks vs Stock Price
             st.subheader("💲Greeks vs Stock Price", divider="rainbow")
             Price_range = np.linspace(latest_price*(1 - slider), latest_price*(1 + slider), 150)
-            delta_values = [calculate_greeks(latest_price, strike_price, time_to_maturity, risk_free_rate, volatility, option_type)["Value"][0] for latest_price in Price_range]
-            gamma_values = [calculate_greeks(latest_price, strike_price, time_to_maturity, risk_free_rate, volatility, option_type)["Value"][1] for latest_price in Price_range]
-            vega_values = [calculate_greeks(latest_price, strike_price, time_to_maturity, risk_free_rate, volatility, option_type)["Value"][2] for latest_price in Price_range]
-            theta_values =[calculate_greeks(latest_price, strike_price, time_to_maturity, risk_free_rate, volatility, option_type)["Value"][3] for latest_price in Price_range]
-            rho_values = [calculate_greeks(latest_price, strike_price, time_to_maturity, risk_free_rate, volatility, option_type)["Value"][4] for latest_price in Price_range]
+            delta_values = [float(calculate_greeks(latest_price, strike_price, time_to_maturity, risk_free_rate, volatility, option_type)["Value"][0]) for latest_price in Price_range]
+            gamma_values = [float(calculate_greeks(latest_price, strike_price, time_to_maturity, risk_free_rate, volatility, option_type)["Value"][1]) for latest_price in Price_range]
+            vega_values = [float(calculate_greeks(latest_price, strike_price, time_to_maturity, risk_free_rate, volatility, option_type)["Value"][2]) for latest_price in Price_range]
+            theta_values = [float(calculate_greeks(latest_price, strike_price, time_to_maturity, risk_free_rate, volatility, option_type)["Value"][3]) for latest_price in Price_range]
+            rho_values = [float(calculate_greeks(latest_price, strike_price, time_to_maturity, risk_free_rate, volatility, option_type)["Value"][4]) for latest_price in Price_range]
 
             plt.style.use("seaborn-v0_8-darkgrid")
             figure, axis = plt.subplots(figsize=(10,6))
@@ -197,7 +200,7 @@ def main():
             axis.set_facecolor("white")
 
             axis.set_xlabel("Stock Price", fontsize=12, fontweight="bold")
-            axis.set_ylabel("Greeks as %",fontsize=12, fontweight="bold")
+            axis.set_ylabel("Greeks",fontsize=12, fontweight="bold")
             axis.set_title("Option Greeks Sensitivity",fontsize=14,pad=20, fontweight="bold")
             axis.legend(frameon=True,framealpha=0.9, shadow=False,facecolor="white")
 

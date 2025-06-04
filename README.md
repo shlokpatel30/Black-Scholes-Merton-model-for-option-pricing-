@@ -4,6 +4,7 @@
 #### App URL: <https://patelshlok.streamlit.app/>
 ### Understanding Option Pricing Through Mathematics
 
+
 This project presents a Python-based implementation of the Black-Scholes-Merton (BSM) model—one of the most widely recognized analytical tools for valuing European-style options. The objective is to illustrate the theoretical foundations of option pricing through a practical and interactive application.
 
 The model is integrated with a Streamlit-based front end, allowing users to input financial parameters and instantly compute both the option price and the associated sensitivity measures (Greeks).

@@ -7,6 +7,8 @@ import mpl_toolkits.mplot3d as axe3d
 import pandas as pd
 from scipy.stats import norm
 
+# use class for BSM model calculation and implementation 
+
 def black_scholes(S, K, T, r, sigma, option_type):
 
     d1 = calculate_d1(S, K, T, r, sigma)
